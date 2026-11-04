@@ -1,0 +1,6 @@
+node_modules
+dist
+.DS_Store
+
+# 导出的成品图片，不提交
+data/*.png
