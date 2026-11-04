@@ -25,7 +25,11 @@ type View = 'pick' | 'compose' | 'custom'
 /** 名单（内置 + 自定义） */
 function useAllEntries(): RosterEntry[] {
   const custom = useStore((s) => s.customEntries)
-  return useMemo(() => [...ALL_MODES.flatMap((m) => getProvider().list(m)), ...custom], [custom])
+  const overrides = useStore((s) => s.rosterOverrides)
+  return useMemo(
+    () => [...ALL_MODES.flatMap((m) => getProvider(overrides).list(m)), ...custom],
+    [custom, overrides],
+  )
 }
 
 function EntryRow({

@@ -632,3 +632,28 @@ button.big {
   height: 15px;
   flex: none;
 }
+
+/* ---------- 名单导入 ---------- */
+.roster-source {
+  margin-top: 0;
+}
+.roster-ok {
+  background: #ecfdf5;
+  border: 1px solid #86efac;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  margin: 8px 0 0;
+}
+.roster-errors {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  margin: 8px 0 0;
+}
+.roster-errors ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}

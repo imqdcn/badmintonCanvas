@@ -18,6 +18,7 @@ beforeEach(() => {
       },
       header: DEFAULT_HEADER,
       customEntries: [],
+      rosterOverrides: {},
       editing: null,
       notice: null,
     })
@@ -103,6 +104,49 @@ describe('App', () => {
     fireEvent.click(slots()[32])
     fireEvent.click(container.ownerDocument.querySelectorAll('.winner-option')[1])
     expect(slots()[32].querySelector('.slot-name')?.textContent).toContain('阿尔菲安')
+  })
+
+  it('导入名单 JSON 后，下拉里使用导入的名单；恢复内置后回到默认', async () => {
+    const { container } = render(<App />)
+    const json = JSON.stringify({
+      mode: 'MD',
+      entries: [
+        {
+          rank: 1,
+          players: [
+            { name: '测试甲', nameEn: 'Test Jia', country: 'CHN' },
+            { name: '测试乙', nameEn: 'Test Yi', country: 'JPN' },
+          ],
+        },
+      ],
+    })
+    const input = container.querySelector('.panel input[type="file"][accept*="json"]')!
+    const file = new File([json], 'my-roster.json', { type: 'application/json' })
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } })
+    })
+    expect(await screen.findByText(/已导入 1 条到「男子双打」/)).toBeTruthy()
+    expect(screen.getByText(/已导入「my-roster.json」/)).toBeTruthy()
+
+    fireEvent.click(container.querySelectorAll('.slot')[0])
+    const list = within(screen.getByRole('listbox'))
+    expect(list.getByText('测试甲/测试乙')).toBeTruthy()
+    expect(list.queryByText('金元浩/徐承宰')).toBeNull()
+    fireEvent.click(document.querySelector('.editor .x')!)
+
+    // 错误文件：提示原因，名单不变
+    const bad = new File(['{"mode":"MD","entries":[{"players":[]}]}'], 'bad.json')
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [bad] } })
+    })
+    expect(await screen.findByText(/导入失败，名单没有改动/)).toBeTruthy()
+    expect(screen.getByText(/已导入「my-roster.json」/)).toBeTruthy()
+
+    // 恢复内置名单
+    window.confirm = () => true
+    fireEvent.click(screen.getByRole('button', { name: '恢复内置名单' }))
+    fireEvent.click(container.querySelectorAll('.slot')[0])
+    expect(within(screen.getByRole('listbox')).getByText('金元浩/徐承宰')).toBeTruthy()
   })
 
   it('各模式的对阵数据互相独立', () => {

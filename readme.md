@@ -42,11 +42,12 @@ src/
     types.ts       数据类型（模式、选手、位置、对阵图）
     bracket.ts     对阵图的创建、修改、晋级、连带清除
     layout.ts      每个位置的像素坐标（还原效果图的核心）
-    roster.ts      把源 JSON 解析成统一格式
+    roster.ts      把 BWF 源 JSON 解析成统一格式
+    rosterImport.ts  名单 JSON 的导入校验 / 导出（两种格式）
     search.ts      名单搜索（含拼音）
     countries.ts   国家代码 -> 国旗/中文名
   providers/
-    PlayerProvider.ts   名单数据源接口 + 内置 JSON 实现
+    PlayerProvider.ts   名单数据源接口 + 内置 JSON 实现（导入的名单优先）
   data/            5 份名单 JSON（BWF 2026 年第 45 周前 100 名）
   store.ts         Zustand 全局状态 + localStorage 持久化
   components/
@@ -54,6 +55,7 @@ src/
     Bracket.tsx        对阵图（绝对定位 + SVG 连线）
     SlotEditor.tsx     点击位置后的编辑弹窗
     ControlPanel.tsx   左侧控制面板
+    RosterPanel.tsx    名单导入 / 导出 / 恢复内置
   export.ts        导出 PNG（html-to-image）
   styles.css
 ```
@@ -67,12 +69,64 @@ src/
 
 ## 更新名单
 
-`src/data/*.json` 是从 BWF 排名导出的 5 份文件，字段：排名、所属、球员、英文名（单打）。
-双打的“球员”字段格式为 `甲中文 Jia English / 乙中文 Yi English`，“所属”为 `KOR KOR`。
-直接替换这些文件即可，格式不变就不用改代码。
+有两种方式：
 
-以后想从 API 拉名单：新增一个实现 `PlayerProvider` 接口的对象，在 `getProvider()` 里切换。
-注意 BWF 官网和中羽在线不能被浏览器直接访问（动态加载 / 拒绝自动请求），需要自己的后端做代理。
+**A. 网页里导入 JSON（只对当前浏览器生效）**
+
+左侧面板“名单”区域：先切到要更新的模式，点“导入 JSON”选择文件。
+导入成功后，下拉列表里该模式使用你导入的名单；“恢复内置名单”可以回到默认。
+有任何一条数据不合格，会整体拒绝并列出问题（第几条、缺什么），不会导入一半。
+点“导出当前名单”可以得到一份标准格式的文件，改完再导入即可。
+
+**B. 改代码重新部署（所有访问者都生效）**
+
+把新的 JSON 放进 `src/data/` 覆盖同名文件（格式见下面的“BWF 导出格式”），提交并推送到 `main`，
+GitHub Actions 会自动重新部署。
+
+### 名单 JSON 格式
+
+导入时自动识别下面两种格式。
+
+**1. 标准格式（推荐）**
+
+```json
+{
+  "format": "badminton-canvas-roster",
+  "version": 1,
+  "mode": "MD",
+  "entries": [
+    {
+      "rank": 1,
+      "players": [
+        { "name": "金元浩", "nameEn": "Kim Won Ho", "country": "KOR" },
+        { "name": "徐承宰", "nameEn": "Seo Seung Jae", "country": "KOR" }
+      ]
+    }
+  ]
+}
+```
+
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `mode` | 否 | `MS` 男单 / `WS` 女单 / `MD` 男双 / `WD` 女双 / `XD` 混双。写了就导入到该模式；不写就导入到当前选中的模式 |
+| `entries` | 是 | 名单数组，最多 2000 条 |
+| `entries[].rank` | 否 | 世界排名（数字），下拉列表按它排序并显示；不写就按顺序编号 |
+| `entries[].players` | 是 | 单打（MS/WS）恰好 1 位，双打（MD/WD/XD）恰好 2 位 |
+| `players[].name` | 是 | 中文名，显示在对阵图上；外国选手可写成“法贾尔·阿尔菲安”，对阵图会按设置显示简称“阿尔菲安” |
+| `players[].nameEn` | 否 | 英文名，用于搜索，会统一成首字母大写 |
+| `players[].country` | 是 | BWF 三字母国家代码（如 CHN、KOR、TPE、ENG），不区分大小写。没有对应国旗的代码只显示文字 |
+
+**2. BWF 导出格式（和 `src/data/` 里的文件一样）**
+
+```json
+[
+  { "排名": 1, "所属": "KOR KOR", "球员": "金元浩 Kim Won Ho / 徐承宰 Seo Seung Jae" }
+]
+```
+
+- 单打：`"所属": "DEN"`，`"球员": "安东森"`，另有 `"英文名": "Anders Antonsen"`。
+- 双打：`"球员"` 用 ` / `（斜杠两侧各一个空格）隔开两位选手，每位是“中文名 英文名”；`"所属"` 是两个国家代码，用空格隔开。
+- 这种格式没有写明模式，导入到当前选中的模式，所以要先切到对应模式再导入。
 
 ## 已知限制
 

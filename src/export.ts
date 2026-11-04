@@ -30,3 +30,23 @@ export function readImage(file: File): Promise<string> {
     reader.readAsDataURL(file)
   })
 }
+
+/** 读取本地文本文件（不会上传到任何服务器） */
+export function readText(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result))
+    reader.onerror = () => reject(reader.error)
+    reader.readAsText(file, 'utf-8')
+  })
+}
+
+/** 把文本保存为文件下载 */
+export function downloadText(filename: string, text: string, mime = 'application/json'): void {
+  const url = URL.createObjectURL(new Blob([text], { type: `${mime};charset=utf-8` }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}

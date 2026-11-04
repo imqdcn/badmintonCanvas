@@ -11,6 +11,7 @@ import {
   setPlayers,
   type ChangeResult,
 } from './domain/bracket'
+import type { RosterOverride, RosterOverrides } from './providers/PlayerProvider'
 import {
   MODES,
   modeInfo,
@@ -58,6 +59,7 @@ interface State {
   sectionLabels: string[]
   header: HeaderState
   customEntries: RosterEntry[]
+  rosterOverrides: RosterOverrides // 导入的名单（按模式）
 
   // 以下是界面临时状态，不会保存
   editing: EditTarget | null
@@ -76,6 +78,8 @@ interface State {
   addSocial: () => void
   updateSocial: (id: string, patch: Partial<Social>) => void
   removeSocial: (id: string) => void
+  setRosterOverride: (mode: Mode, override: RosterOverride) => void
+  clearRosterOverride: (mode: Mode) => void
   addCustom: (entry: RosterEntry) => void
   removeCustom: (id: string) => void
   openEditor: (target: EditTarget) => void
@@ -165,6 +169,7 @@ export const useStore = create<State>()(
         sectionLabels: ['1/4区', '2/4区', '3/4区', '4/4区'],
         header: DEFAULT_HEADER,
         customEntries: [],
+        rosterOverrides: {},
         editing: null,
         notice: null,
 
@@ -226,6 +231,15 @@ export const useStore = create<State>()(
             header: { ...s.header, socials: s.header.socials.filter((x) => x.id !== id) },
           })),
 
+        setRosterOverride: (mode, override) =>
+          set((s) => ({ rosterOverrides: { ...s.rosterOverrides, [mode]: override } })),
+        clearRosterOverride: (mode) =>
+          set((s) => {
+            const next = { ...s.rosterOverrides }
+            delete next[mode]
+            return { rosterOverrides: next }
+          }),
+
         addCustom: (entry) => set((s) => ({ customEntries: [...s.customEntries, entry] })),
         removeCustom: (id) =>
           set((s) => ({ customEntries: s.customEntries.filter((e) => e.id !== id) })),
@@ -253,6 +267,7 @@ export const useStore = create<State>()(
         sectionLabels: s.sectionLabels,
         header: s.header,
         customEntries: s.customEntries,
+        rosterOverrides: s.rosterOverrides,
       }),
     },
   ),

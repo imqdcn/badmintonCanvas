@@ -3,6 +3,7 @@ import { bracketHasData } from '../domain/bracket'
 import { BRACKET_SIZES, MODES, modeInfo, type BracketSize } from '../domain/types'
 import { exportPng, readImage } from '../export'
 import { useStore } from '../store'
+import { RosterPanel } from './RosterPanel'
 
 function ImageField({
   label,
@@ -239,6 +240,8 @@ export function ControlPanel({ canvasRef }: { canvasRef: RefObject<HTMLDivElemen
           </button>
         </div>
       </section>
+
+      <RosterPanel />
 
       <section>
         <h2>水印</h2>

@@ -27,8 +27,21 @@ export const builtinProvider: PlayerProvider = {
   list: (mode) => BUILTIN[mode],
 }
 
-export function getProvider(): PlayerProvider {
-  return builtinProvider
+/** 用户从 JSON 文件导入的名单（保存在浏览器本地），优先于内置名单 */
+export interface RosterOverride {
+  entries: RosterEntry[]
+  fileName: string
+  importedAt: number // 毫秒时间戳
+}
+export type RosterOverrides = Partial<Record<Mode, RosterOverride>>
+
+export const BUILTIN_LABEL = '内置：BWF 2026 年第 45 周前 100 名'
+
+/** 某个模式生效的名单：导入过就用导入的，否则用内置的 */
+export function getProvider(overrides?: RosterOverrides): PlayerProvider {
+  return {
+    list: (mode) => overrides?.[mode]?.entries ?? BUILTIN[mode],
+  }
 }
 
 export const ALL_MODES: Mode[] = ['MS', 'WS', 'MD', 'WD', 'XD']
