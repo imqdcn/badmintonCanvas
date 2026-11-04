@@ -108,18 +108,9 @@ describe('App', () => {
 
   it('导入名单 JSON 后，下拉里使用导入的名单；恢复内置后回到默认', async () => {
     const { container } = render(<App />)
-    const json = JSON.stringify({
-      mode: 'MD',
-      entries: [
-        {
-          rank: 1,
-          players: [
-            { name: '测试甲', nameEn: 'Test Jia', country: 'CHN' },
-            { name: '测试乙', nameEn: 'Test Yi', country: 'JPN' },
-          ],
-        },
-      ],
-    })
+    const json = JSON.stringify([
+      { 排名: 1, 所属: 'CHN JPN', 球员: '测试甲 Test Jia / 测试乙 Test Yi' },
+    ])
     const input = container.querySelector('.panel input[type="file"][accept*="json"]')!
     const file = new File([json], 'my-roster.json', { type: 'application/json' })
     await act(async () => {
@@ -135,7 +126,7 @@ describe('App', () => {
     fireEvent.click(document.querySelector('.editor .x')!)
 
     // 错误文件：提示原因，名单不变
-    const bad = new File(['{"mode":"MD","entries":[{"players":[]}]}'], 'bad.json')
+    const bad = new File(['[{"排名":1,"所属":"CHN","球员":"只有一个人"}]'], 'bad.json')
     await act(async () => {
       fireEvent.change(input, { target: { files: [bad] } })
     })

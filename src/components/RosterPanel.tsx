@@ -35,10 +35,8 @@ export function RosterPanel() {
       return
     }
     setOverride(res.mode, { entries: res.entries, fileName: file.name, importedAt: Date.now() })
-    const target = modeInfo(res.mode)
     const msg =
-      `已导入 ${res.entries.length} 条到「${target.label}」名单` +
-      (res.mode !== mode ? `（文件里指定了模式 ${res.mode}，不是当前模式）` : '') +
+      `已导入 ${res.entries.length} 条到「${info_.label}」名单` +
       (res.warnings.length ? `。注意：${res.warnings.join('；')}` : '')
     setInfo(msg)
     notify(null)
@@ -104,8 +102,9 @@ export function RosterPanel() {
         </div>
       )}
       <p className="hint">
-        导入只影响当前浏览器。格式见 readme；先点“导出当前名单”可得到一份标准格式的模板。
-        已放进对阵图的选手不会受影响。
+        文件格式与内置名单（src/data）相同，会导入到当前模式「{info_.label}」
+        {info_.double ? '，“球员”需为“甲 Jia / 乙 Yi”两位选手' : '，每条 1 位选手'}。
+        导入只影响当前浏览器，已放进对阵图的选手不受影响。点“导出当前名单”可得到一份模板。
       </p>
     </section>
   )
