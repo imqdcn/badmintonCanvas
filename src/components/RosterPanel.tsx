@@ -4,6 +4,7 @@ import { modeInfo } from '../domain/types'
 import { downloadText, readText } from '../export'
 import { BUILTIN_LABEL, getProvider } from '../providers/PlayerProvider'
 import { useStore } from '../store'
+import { Collapse } from './Collapse'
 
 /** 左侧面板的“名单”区域：导入 JSON、导出当前名单、恢复内置名单 */
 export function RosterPanel() {
@@ -43,8 +44,11 @@ export function RosterPanel() {
   }
 
   return (
-    <section>
-      <h2>名单（{info_.label}）</h2>
+    <Collapse
+      icon="📋"
+      title={`名单（${info_.short}）`}
+      badge={override ? <span className="vtag">已导入</span> : undefined}
+    >
       <p className="hint roster-source">
         当前使用：
         {override
@@ -52,7 +56,7 @@ export function RosterPanel() {
           : `${BUILTIN_LABEL}，${current.length} 条`}
       </p>
       <div className="field-inline">
-        <label className="file-btn">
+        <label className="vbtn primary-plain small">
           导入 JSON
           <input
             type="file"
@@ -67,6 +71,7 @@ export function RosterPanel() {
         </label>
         <button
           type="button"
+          className="vbtn plain small"
           onClick={() => downloadText(`名单-${info_.short}.json`, rosterToJson(mode, current))}
         >
           导出当前名单
@@ -74,6 +79,7 @@ export function RosterPanel() {
         {override && (
           <button
             type="button"
+            className="vbtn danger-plain small"
             onClick={() => {
               if (window.confirm(`恢复「${info_.label}」的内置名单？已导入的名单会被移除。`)) {
                 clearOverride(mode)
@@ -106,6 +112,6 @@ export function RosterPanel() {
         {info_.double ? '，“球员”需为“甲 Jia / 乙 Yi”两位选手' : '，每条 1 位选手'}。
         导入只影响当前浏览器，已放进对阵图的选手不受影响。点“导出当前名单”可得到一份模板。
       </p>
-    </section>
+    </Collapse>
   )
 }

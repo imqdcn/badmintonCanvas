@@ -35,6 +35,18 @@ describe('App', () => {
     expect(container.querySelectorAll('.slot')).toHaveLength(63)
   })
 
+  it('折叠面板：对阵设置默认展开，其他默认收起，点击标题可展开/收起', () => {
+    render(<App />)
+    const head = (name: RegExp) => screen.getByRole('button', { name })
+    expect(head(/对阵设置/).getAttribute('aria-expanded')).toBe('true')
+    expect(head(/头部海报/).getAttribute('aria-expanded')).toBe('false')
+    expect(screen.queryByText('赛事名称')).toBeNull()
+    fireEvent.click(head(/头部海报/))
+    expect(screen.getByText('赛事名称')).toBeTruthy()
+    fireEvent.click(head(/头部海报/))
+    expect(screen.queryByText('赛事名称')).toBeNull()
+  })
+
   it('切换模式后标题里的关键词同步变化', () => {
     const { container } = render(<App />)
     fireEvent.click(screen.getByRole('tab', { name: '混双' }))
@@ -111,6 +123,8 @@ describe('App', () => {
     const json = JSON.stringify([
       { 排名: 1, 所属: 'CHN JPN', 球员: '测试甲 Test Jia / 测试乙 Test Yi' },
     ])
+    // 名单区域默认折叠，先展开
+    fireEvent.click(screen.getByRole('button', { name: /名单（男双）/ }))
     const input = container.querySelector('.panel input[type="file"][accept*="json"]')!
     const file = new File([json], 'my-roster.json', { type: 'application/json' })
     await act(async () => {
