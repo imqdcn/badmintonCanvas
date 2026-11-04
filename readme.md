@@ -11,6 +11,12 @@ npm test         # 运行测试
 npm run build    # 类型检查 + 打包
 ```
 
+## 在线使用
+
+<https://imqdcn.github.io/badmintonCanvas/>
+
+推送到 `main` 分支会通过 GitHub Actions 自动测试、打包并重新部署（见 `.github/workflows/deploy.yml`）。
+
 ## 怎么用
 
 - **模式**：左侧面板切换 男单 / 女单 / 男双 / 女双 / 混双。每种模式的对阵数据独立保存。
